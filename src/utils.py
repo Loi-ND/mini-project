@@ -132,6 +132,13 @@ def processing_salary_columns(df: pd.DataFrame) -> pd.DataFrame:
         new_df.append(filtered_df)
 
     new_df = pd.concat(new_df, ignore_index=True)
+    new_df = new_df[
+        new_df['max_salary'].isna()
+        | (
+            ((new_df['salary_unit'] == "USD") & (new_df['max_salary'] < 10000))
+            | ((new_df['salary_unit'] == "VND") & (new_df['max_salary'] < 100000000))
+        )
+    ]
 
     return new_df
 

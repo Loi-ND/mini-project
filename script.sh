@@ -1,0 +1,1 @@
+echo "python3 /mnt/d/dec/mini-project/src/main.py >> /mnt/d/dec/mini-project/output.log 2>&1" | at 17:17 2026-09-06
