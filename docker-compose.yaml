@@ -1,0 +1,14 @@
+services:
+  mysql:
+    image: mysql:8-debian
+    container_name: mysql
+    restart: unless-stopped
+
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: employee_db
+      MYSQL_USER: mysql
+      MYSQL_PASSWORD: mysql
+
+    ports:
+      - "3306:3306"
