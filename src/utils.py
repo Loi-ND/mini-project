@@ -1,5 +1,6 @@
 import pandas as pd
 from typing import List
+import re
 
 def processing_salary_columns(df: pd.DataFrame) -> pd.DataFrame:
     patterns = [
@@ -253,3 +254,35 @@ def processing_address_columns(df: pd.DataFrame) -> pd.DataFrame:
     )
 
     return new_df
+
+def processing_job_categories(df: pd.DataFrame) -> pd.DataFrame:
+    KEYWORDS_MAP = {
+        "Software Development": r"java|reactjs|nodejs|\.net|c#|php|python|c\+\+|golang|node|backend|fullstack|lập trình viên|developer|frontend|front-end|react|vue|angular|wordpress|html|css|android|ios|flutter|react native|mobile|backend",
+        "Business Analyst & Product": r"business analyst|\bba\b|product manager|product owner|project manager|scrum",
+        "Testing & QA": r"tester|\bqa\b|\bqc\b|kiểm thử|automation|manual test",
+        "Data & AI": r"data|\bai\b|machine learning|big data|\bbi\b|database|ocr|computer vision",
+        "DevOps & System": r"devops|sre|system|admin|network|cloud|aws|azure",
+        "Embedded & IoT": r"embedded|iot|nhúng|firmware",
+        "Security": r"security|pentest|soc|bảo mật",
+    }
+
+    # 3. Hàm phân loại từng job_title
+    def classify_job(title):
+        if not isinstance(title, str):
+            return "Khác"
+
+        title_lower = title.lower()
+
+        # So khớp với từng bộ từ khóa
+        for category, pattern in KEYWORDS_MAP.items():
+            if re.search(pattern, title_lower):
+                return category
+
+        return "Unknown"
+
+    df['job_category'] = (
+        df['job_title']
+        .apply(classify_job)
+    )
+
+    return df
