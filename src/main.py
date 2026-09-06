@@ -1,7 +1,7 @@
 import pandas as pd
 
 df = pd.read_csv("../data/data.csv")
-
+df['salary'].to_csv("sample.csv")
 patterns = [
     r"^Thoả thuận$",
     r"^Trên\s+\d+(?:\.\d+)*\s+triệu$",
