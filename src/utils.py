@@ -1,6 +1,7 @@
 import pandas as pd
+from typing import List
 
-def process_salary_columns(df: pd.DataFrame) -> pd.DataFrame:
+def processing_salary_columns(df: pd.DataFrame) -> pd.DataFrame:
     patterns = [
         r"^Thoả thuận$",
         r"^Trên\s+\d+(?:\.\d+)*\s+triệu$",
@@ -126,6 +127,81 @@ def process_salary_columns(df: pd.DataFrame) -> pd.DataFrame:
                 filtered_df = filtered_df.assign(
                     salary_unit=pd.Series("USD", index=filtered_df.index, dtype="string")
                 )
+
+        new_df.append(filtered_df)
+
+    new_df = pd.concat(new_df, ignore_index=True)
+
+    return new_df
+
+def processing_address_columns(df: pd.DataFrame) -> pd.DataFrame:
+
+    def split_city_address_tuple(addresses: List) -> List:
+        length = len(addresses)
+        res = []
+        for i in range(0, length // 2):
+            res.append([addresses[i * 2], addresses[i * 2 + 1]])
+        return res
+    
+    patterns = [
+        r"^[\w\s]+$",
+        r"^[\w\s]+(: [\w,\s]+)+$"
+    ]
+
+    new_df = []
+
+    for pattern in patterns:
+        mask = df['address'].str.match(pattern)
+        filtered_df = df.loc[mask]
+
+        match pattern:
+            #  city và district
+            case r"^[\w\s]+$":
+                filtered_df = filtered_df.assign(
+                    city=filtered_df['address'],
+                    district=pd.Series("Unkonwn", index=filtered_df.index, dtype="string"),
+                )
+
+            case r"^[\w\s]+(: [\w,\s]+)+$":
+                filtered_df = filtered_df.reset_index(names="id")
+                addreses_df = filtered_df[["id", "address"]]
+
+                addreses_df["splited_addresses"] = (
+                    addreses_df['address']
+                    .str
+                    .findall(r"[\w,\s]+")
+                    .apply(lambda x: [item.strip() for item in x])
+                )
+
+                addreses_df = addreses_df.drop(columns=["address"])
+
+                addreses_df["splited_addresses"] = (
+                    addreses_df["splited_addresses"]
+                    .apply(split_city_address_tuple)
+                )
+
+                addreses_df = addreses_df.explode("splited_addresses", ignore_index=True)
+                addreses_df[["city", "district"]] = pd.DataFrame(
+                    addreses_df["splited_addresses"].tolist(),
+                    index=addreses_df.index
+                )
+                addreses_df = addreses_df.drop(columns=["splited_addresses"])
+
+                addreses_df['district'] = (
+                    addreses_df["district"]
+                    .str
+                    .findall(r"[\w\s]+")
+                )
+
+                addreses_df = addreses_df.explode('district', ignore_index=True)
+
+                filtered_df = filtered_df.join(
+                    addreses_df,
+                    on="id",
+                    how="inner"
+                )
+
+                filtered_df = filtered_df.drop(columns=['id'])
 
         new_df.append(filtered_df)
 

@@ -1,5 +1,5 @@
 import pandas as pd
-from utils import process_salary_columns
+from utils import processing_salary_columns
 
 
 def test_thoa_thuan():
@@ -7,7 +7,7 @@ def test_thoa_thuan():
         "salary": ["Thoả thuận"]
     })
 
-    result = process_salary_columns(df)
+    result = processing_salary_columns(df)
 
     assert pd.isna(result.loc[0, "min_salary"])
     assert pd.isna(result.loc[0, "max_salary"])
@@ -23,7 +23,7 @@ def test_tren_vnd():
         ]
     })
 
-    result = process_salary_columns(df)
+    result = processing_salary_columns(df)
 
     assert result.loc[0, "min_salary"] == 15
     assert result.loc[0, "salary_unit"] == "VND"
@@ -44,7 +44,7 @@ def test_toi_vnd():
         ]
     })
 
-    result = process_salary_columns(df)
+    result = processing_salary_columns(df)
 
     assert result.loc[0, "max_salary"] == 30
     assert result.loc[0, "salary_unit"] == "VND"
@@ -61,7 +61,7 @@ def test_tren_usd():
         ]
     })
 
-    result = process_salary_columns(df)
+    result = processing_salary_columns(df)
 
     assert result.loc[0, "min_salary"] == 1000
     assert result.loc[0, "salary_unit"] == "USD"
@@ -78,7 +78,7 @@ def test_toi_usd():
         ]
     })
 
-    result = process_salary_columns(df)
+    result = processing_salary_columns(df)
 
     assert result.loc[0, "max_salary"] == 1500
     assert result.loc[0, "salary_unit"] == "USD"
@@ -96,7 +96,7 @@ def test_range_vnd():
         ]
     })
 
-    result = process_salary_columns(df)
+    result = processing_salary_columns(df)
 
     assert result.loc[0, "min_salary"] == 15
     assert result.loc[0, "max_salary"] == 25
@@ -115,7 +115,7 @@ def test_range_usd():
         ]
     })
 
-    result = process_salary_columns(df)
+    result = processing_salary_columns(df)
 
     assert result.loc[0, "min_salary"] == 600
     assert result.loc[0, "max_salary"] == 1500
