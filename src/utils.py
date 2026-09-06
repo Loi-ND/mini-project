@@ -139,10 +139,15 @@ def processing_address_columns(df: pd.DataFrame) -> pd.DataFrame:
     def split_city_address_tuple(addresses: List) -> List:
         length = len(addresses)
         res = []
+
         for i in range(0, length // 2):
-            res.append([addresses[i * 2], addresses[i * 2 + 1]])
+            res.append([
+                addresses[i * 2],
+                addresses[i * 2 + 1]
+            ])
+
         return res
-    
+
     patterns = [
         r"^[\w\s]+$",
         r"^[\w\s]+(: [\w,\s]+)+$"
@@ -151,60 +156,100 @@ def processing_address_columns(df: pd.DataFrame) -> pd.DataFrame:
     new_df = []
 
     for pattern in patterns:
-        mask = df['address'].str.match(pattern)
-        filtered_df = df.loc[mask]
+
+        mask = df["address"].str.match(pattern)
+        filtered_df = df.loc[mask].copy()
 
         match pattern:
-            #  city và district
+
             case r"^[\w\s]+$":
+
                 filtered_df = filtered_df.assign(
-                    city=filtered_df['address'],
-                    district=pd.Series("Unkonwn", index=filtered_df.index, dtype="string"),
+                    city=filtered_df["address"],
+                    district=pd.Series(
+                        "Unknown",
+                        index=filtered_df.index,
+                        dtype="string"
+                    ),
                 )
 
             case r"^[\w\s]+(: [\w,\s]+)+$":
+
                 filtered_df = filtered_df.reset_index(names="id")
-                addreses_df = filtered_df[["id", "address"]]
+
+                addreses_df = filtered_df[["id", "address"]].copy()
 
                 addreses_df["splited_addresses"] = (
-                    addreses_df['address']
-                    .str
-                    .findall(r"[\w,\s]+")
-                    .apply(lambda x: [item.strip() for item in x])
+                    addreses_df["address"]
+                    .str.findall(r"[\w,\s]+")
+                    .apply(
+                        lambda x: [
+                            item.strip()
+                            for item in x
+                        ]
+                    )
                 )
 
-                addreses_df = addreses_df.drop(columns=["address"])
+                addreses_df = addreses_df.drop(
+                    columns=["address"]
+                )
 
                 addreses_df["splited_addresses"] = (
                     addreses_df["splited_addresses"]
                     .apply(split_city_address_tuple)
                 )
 
-                addreses_df = addreses_df.explode("splited_addresses", ignore_index=True)
-                addreses_df[["city", "district"]] = pd.DataFrame(
+                addreses_df = addreses_df.explode(
+                    "splited_addresses",
+                    ignore_index=True
+                )
+
+                # Tách [city, district]
+                city_district = pd.DataFrame(
                     addreses_df["splited_addresses"].tolist(),
-                    index=addreses_df.index
+                    index=addreses_df.index,
+                    columns=["city", "district"]
                 )
-                addreses_df = addreses_df.drop(columns=["splited_addresses"])
 
-                addreses_df['district'] = (
+                addreses_df = pd.concat(
+                    [
+                        addreses_df.drop(
+                            columns=["splited_addresses"]
+                        ),
+                        city_district
+                    ],
+                    axis=1
+                )
+
+                addreses_df["district"] = (
                     addreses_df["district"]
-                    .str
-                    .findall(r"[\w\s]+")
+                    .str.findall(r"[\w\s]+")
+                    .apply(
+                        lambda x: [
+                            item.strip()
+                            for item in x
+                        ]
+                    )
                 )
 
-                addreses_df = addreses_df.explode('district', ignore_index=True)
-
-                filtered_df = filtered_df.join(
-                    addreses_df,
-                    on="id",
-                    how="inner"
+                addreses_df = addreses_df.explode(
+                    "district",
+                    ignore_index=True
                 )
 
-                filtered_df = filtered_df.drop(columns=['id'])
+                filtered_df = filtered_df.merge(
+                    addreses_df[["id", "city", "district"]], on="id", how="inner"
+                )
+
+                filtered_df = filtered_df.drop(
+                    columns=["id"]
+                )
 
         new_df.append(filtered_df)
 
-    new_df = pd.concat(new_df, ignore_index=True)
+    new_df = pd.concat(
+        new_df,
+        ignore_index=True
+    )
 
     return new_df
