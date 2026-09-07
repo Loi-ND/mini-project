@@ -2,6 +2,7 @@ services:
   mysql:
     image: mysql:8.4
     container_name: mysql
+    hostname: mysql
     restart: unless-stopped
 
     environment:

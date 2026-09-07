@@ -34,6 +34,7 @@ def processing_salary_columns(df: pd.DataFrame) -> pd.DataFrame:
                     .findall(r"\d+(?:\.\d+)*")
                     .str[0]
                     .astype("Float64")
+                    * 1000000
                 )
 
                 filtered_df = filtered_df.assign(
@@ -63,6 +64,7 @@ def processing_salary_columns(df: pd.DataFrame) -> pd.DataFrame:
                     .findall(r"\d+(?:\.\d+)*")
                     .str[0]
                     .astype("Float64")
+                    * 1000000
                 )
 
                 filtered_df = filtered_df.assign(
@@ -92,6 +94,7 @@ def processing_salary_columns(df: pd.DataFrame) -> pd.DataFrame:
                     .findall(r"\d+(?:\.\d+)*")
                     .str[0]
                     .astype("Float64")
+                    * 1000000
                 )
 
                 filtered_df["max_salary"] = (
@@ -100,6 +103,7 @@ def processing_salary_columns(df: pd.DataFrame) -> pd.DataFrame:
                     .findall(r"\d+(?:\.\d+)*")
                     .str[1]
                     .astype("Float64")
+                    * 1000000
                 )
 
                 filtered_df = filtered_df.assign(
