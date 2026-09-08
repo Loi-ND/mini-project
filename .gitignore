@@ -2,3 +2,4 @@ data
 .venv
 .pytest_cache
 .wsl_venv
+.env
