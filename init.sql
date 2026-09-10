@@ -4,7 +4,6 @@ CREATE TABLE jobs (
     company TEXT,
     salary TEXT,
     address TEXT,
-    time TEXT,
     link_description TEXT,
     city VARCHAR(50),
     district VARCHAR(50),
@@ -29,8 +28,6 @@ GROUP BY t.name
 HAVING COUNT(DISTINCT j.job_title) > 0
 ORDER BY total_jobs DESC;
 
-SELECT DISTINCT job_title
-FROM jobs;
 
 
 INSERT INTO technologies (name) VALUES

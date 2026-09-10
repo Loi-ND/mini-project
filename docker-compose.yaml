@@ -10,6 +10,35 @@ services:
       MYSQL_DATABASE: jobs_db
       MYSQL_USER: mysql
       MYSQL_PASSWORD: mysql
+    
+    volumes:
+      - mysql-data:/var/lib/mysql
 
     ports:
       - "3306:3306"
+  airflow:
+    image: airflow:mini-project
+    container_name: airflow
+    hostname: airflow
+    ports:
+      - 8080:8080
+    deploy:
+      resources:
+        limits:
+          cpus: 2
+          memory: 2G
+    storage_opt:
+      size: 3G
+    command: ["/bin/bash", "/workspace/airflow-entrypoint.sh"]
+    volumes:
+      - ./airflow/home:/workspace/airflow
+      - ./src/dags:/workspace/dags
+      - ./src/jobs:/workspace/jobs
+      - ./img:/workspace/img
+      - ./data:/workspace/data
+      - ./airflow/entrypoint.sh:/workspace/airflow-entrypoint.sh
+      - ./requirements.txt:/workspace/airflow/requirements.txt
+      - ./.env:/workspace/.env
+
+volumes:
+  mysql-data:

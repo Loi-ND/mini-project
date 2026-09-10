@@ -1,6 +1,6 @@
 import pandas as pd
 from pandas.testing import assert_frame_equal
-from utils import processing_address_columns
+from jobs.utils import processing_address_columns
 
 
 def test_address_only_city():

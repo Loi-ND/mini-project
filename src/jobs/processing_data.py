@@ -1,17 +1,26 @@
 import pandas as pd
 from mysql import connector
 from mysql.connector import Error
+import os
+
+AIRFLOW_HOME=os.environ.get("AIRFLOW_HOME")
 
 from utils import (
     processing_address_columns,
     processing_salary_columns,
     processing_job_categories
 )
-df = pd.read_csv("../data/data.csv")
+df = pd.read_csv(
+    os.path.join(
+        AIRFLOW_HOME,
+        "..",
+        "data/data.csv"
+    )
+)
 
+df = processing_job_categories(df)
 df = processing_address_columns(df)
 df = processing_salary_columns(df)
-df = processing_job_categories(df)
 
 job_detail_records = [
     (
@@ -20,7 +29,6 @@ job_detail_records = [
         item.get("company"),
         item.get("salary"),
         item.get("address"),
-        item.get("time"),
         item.get("link_description"),
         item.get("city"),
         item.get("district"),
@@ -54,7 +62,6 @@ try:
                     company, 
                     salary, 
                     address,
-                    time,
                     link_description,
                     city,
                     district,
@@ -63,7 +70,7 @@ try:
                     salary_unit,
                     job_category
                 )
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);
                 """
             ),
             seq_params=job_detail_records

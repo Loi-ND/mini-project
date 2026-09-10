@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 from pandas.testing import assert_frame_equal
 
-from utils import processing_job_categories
+from jobs.utils import processing_job_categories
 
 
 def test_software_development():

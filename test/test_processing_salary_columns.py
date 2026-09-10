@@ -1,5 +1,5 @@
 import pandas as pd
-from utils import processing_salary_columns
+from jobs.utils import processing_salary_columns
 
 
 def test_thoa_thuan():
