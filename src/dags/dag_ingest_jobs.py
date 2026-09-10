@@ -1,7 +1,7 @@
 import os
 from datetime import datetime, timedelta
 
-from utils.notity import (discord_notification_on_failure,
+from notify import (discord_notification_on_failure,
                     discord_notification_on_success)
 from airflow.sdk import DAG
 from airflow.providers.standard.operators.bash import BashOperator
