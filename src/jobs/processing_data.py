@@ -1,6 +1,7 @@
 import pandas as pd
 from mysql import connector
 from mysql.connector import Error
+from datetime import datetime
 import os
 
 AIRFLOW_HOME=os.environ.get("AIRFLOW_HOME")
@@ -41,7 +42,7 @@ job_detail_records = [
 ]
 
 conn = connector.connect(
-    host="localhost",
+    host="mysql",
     port=3306,
     user="mysql",
     password="mysql",
@@ -53,6 +54,14 @@ try:
     if conn.is_connected():
         cursor = conn.cursor()
 
+        cursor.execute(
+            operation=(
+                f"""
+                DELETE FROM jobs
+                WHERE created_date = '{datetime.today().date().strftime(f"%Y-%m-%d")}'
+                """
+            )
+        )
         cursor.executemany(
             operation=(
                 """

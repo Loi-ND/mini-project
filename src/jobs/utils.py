@@ -501,7 +501,7 @@ def processing_job_categories(df: pd.DataFrame) -> pd.DataFrame:
 
     total = len(elements)
 
-    batch_size = (total + 2) // 40
+    batch_size = (total + 2) // 60
 
     batches = [
         elements[i:i + batch_size]
@@ -526,7 +526,7 @@ def processing_job_categories(df: pd.DataFrame) -> pd.DataFrame:
             f"Request {i} hoàn thành: "
             f"{len(result)} results"
         )
-
+        time.sleep(4)
 
 
     if len(all_results) != len(df):

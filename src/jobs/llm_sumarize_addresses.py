@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import List, Dict
 from datetime import datetime
 import pandas as pd
+import time
 
 AIRFLOW_HOME=os.environ.get("AIRFLOW_HOME")
 def merge_json_files(folder_path):
@@ -172,6 +173,8 @@ for i, batch in enumerate(batches, start=1):
         f"Request {i} hoàn thành: "
         f"{len(result)} results"
     )
+
+    time.sleep(4)
 
 
 if len(all_results) != len(data):

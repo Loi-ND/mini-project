@@ -23,7 +23,7 @@ AIRFLOW_HOME=os.environ.get("AIRFLOW_HOME")
 processing_date = datetime.today().date().strftime(f"%Y-%m-%d")
 
 conn = mysql.connector.connect(
-    host="localhost",
+    host="mysql",
     port=3306,
     user="mysql",
     password="mysql",
