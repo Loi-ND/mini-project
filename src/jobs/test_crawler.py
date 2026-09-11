@@ -10,7 +10,7 @@ from datetime import datetime
 import os
 
 BASE_URL = "https://www.topcv.vn/tim-viec-lam-cong-nghe-thong-tin-cr257"
-AIRFLOW_HOME=os.environ.get("AIRFLOW_HOME")
+AIRFLOW_HOME="sample"
 
 def set_url(page: int):
     return f"https://www.topcv.vn/tim-viec-lam-cong-nghe-thong-tin-cr257?sort=new&type_keyword=1&disable_auto_detect_type_keyword=1&page={page}&category_family=r257&saturday_status=0"
@@ -31,14 +31,13 @@ def create_driver():
 
     driver = uc.Chrome(
         options=options,
-        version_main=153,
+        version_main=152,
         use_subprocess=False
     )
 
     return driver
 
 def processing_job_item(job_item: WebElement, driver: uc.Chrome):
-
     tag = job_item.find_element(
         by=By.CSS_SELECTOR,
         value="div.box-icon > div.tag"
@@ -56,6 +55,7 @@ def processing_job_item(job_item: WebElement, driver: uc.Chrome):
             tag_values.append(value)
 
     tag_txt = ", ".join(tag_values)
+
     next_button = job_item.find_element(
         by=By.CSS_SELECTOR,
         value="p.quick-view-job-detail"
@@ -132,7 +132,7 @@ def processing_job_item(job_item: WebElement, driver: uc.Chrome):
 def main():
     driver = create_driver()
     os.makedirs(
-        os.path.join(AIRFLOW_HOME,"..", f"data/{datetime.today().date().strftime("%Y-%m-%d")}"), 
+        AIRFLOW_HOME, 
         exist_ok=True
     )
 
@@ -182,7 +182,7 @@ def main():
         for i, job_item in enumerate(job_items):
             print(f"{page} - {i}")
             driver.execute_script(
-                "arguments[0].scrollIntoView({block: 'nearest'});",
+                "arguments[0].scrollIntoView({block: 'start'});",
                 job_item
             )
             result.append(
@@ -192,7 +192,7 @@ def main():
                 )
             )
 
-        with open(os.path.join(AIRFLOW_HOME,"..",f"data/{datetime.today().date().strftime("%Y-%m-%d")}/res_{page}.json"), "w", encoding="utf-8") as file:
+        with open(f"{AIRFLOW_HOME}/res_{page}.json", "w", encoding="utf-8") as file:
             json.dump(result, file, ensure_ascii=False, indent=4)
         time.sleep(0.5)
 

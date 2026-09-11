@@ -11,6 +11,7 @@ llm_sumarize_addresses_path = os.path.join(AIRFLOW_HOME, "..", "jobs/llm_sumariz
 processing_data_path = os.path.join(AIRFLOW_HOME, "..", "jobs/processing_data.py")
 visualize_path = os.path.join(AIRFLOW_HOME, "..", "jobs/visualize.py")
 send_charts_to_discord_path = os.path.join(AIRFLOW_HOME, "..", "jobs/send_charts_to_discord.py")
+send_data_engineer_jobs_path = os.path.join(AIRFLOW_HOME, "..", "jobs/send_data_engineer_jobs.py")
 python = os.path.join(AIRFLOW_HOME, ".venv/bin/python")
 
 default_args = {
@@ -64,9 +65,18 @@ with DAG(
         execution_timeout = timedelta(minutes=20)
     )
 
+    send_data_engineer_jobs_task = BashOperator(
+        task_id = "send_data_engineer_jobs_task",
+        bash_command=(
+            f"{python} {send_data_engineer_jobs_path}"
+        ),
+        execution_timeout = timedelta(minutes=20)
+    )
+
     (
         llm_sumarize_addresses_task >>
         processing_data_task >>
         visualize_task >>
-        send_charts_to_discord_task
+        send_charts_to_discord_task >>
+        send_data_engineer_jobs_task
     )

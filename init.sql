@@ -10,12 +10,17 @@ CREATE TABLE jobs (
     min_salary FLOAT,
     max_salary FLOAT,
     salary_unit VARCHAR(10),
-    job_category VARCHAR(50)
+    tag TEXT
 );
 
 
 CREATE TABLE technologies (
 	name TEXT
+);
+
+CREATE TABLE categories (
+    name TEXT,
+    group_cat TEXT
 );
 
 SELECT 
@@ -28,7 +33,55 @@ GROUP BY t.name
 HAVING COUNT(DISTINCT j.job_title) > 0
 ORDER BY total_jobs DESC;
 
-
+INSERT INTO categories (name, group_cat) VALUES
+('Kinh doanh phần mềm', 'Sales IT Phần mềm'),
+('Sales IT Phần mềm khác', 'Sales IT Phần mềm'),
+('Kinh doanh Domain/Hosting/Server', 'Sales IT Phần mềm'),
+('Thiết kế đồ họa (Graphic Design)', 'Quảng cáo/Sáng tạo'),
+('Animation Design', 'Quảng cáo/Sáng tạo'),
+('3D Modeler', 'Quảng cáo/Sáng tạo'),
+('Ad Operations Manager', 'Quảng cáo/Sáng tạo'),
+('Photographer/Video Editor', 'Quảng cáo/Sáng tạo'),
+('Backend Developer', 'Software Engineering'),
+('Software Engineer', 'Software Engineering'),
+('Fullstack Developer', 'Software Engineering'),
+('Mobile Developer', 'Software Engineering'),
+('Frontend Developer', 'Software Engineering'),
+('Blockchain Engineer', 'Software Engineering'),
+('IT Helpdesk/IT support', 'IT Infrastructure and Operations'),
+('DevOps Engineer', 'IT Infrastructure and Operations'),
+('System Administrator', 'IT Infrastructure and Operations'),
+('System Engineer', 'IT Infrastructure and Operations'),
+('Network Engineer', 'IT Infrastructure and Operations'),
+('Kỹ thuật IT', 'IT Infrastructure and Operations'),
+('Database Administrator (DBA)', 'IT Infrastructure and Operations'),
+('Cloud Engineer', 'IT Infrastructure and Operations'),
+('Business Analyst (Phân tích nghiệp vụ)','Product Management'),
+('Product Owner/Product Manager','Product Management'),
+('Product Analyst/Research','Product Management'),
+('Thiết kế đồ họa (Graphic Design)', 'Thiết kế Đồ hoạ/Giao diện/Trải nghiệm'),
+('UI/UX Design', 'Thiết kế Đồ hoạ/Giao diện/Trải nghiệm'),
+('3D Modeler', 'Thiết kế Đồ hoạ/Giao diện/Trải nghiệm'),
+('Illustration', 'Thiết kế Đồ hoạ/Giao diện/Trải nghiệm'),
+('Chuyên môn Thiết kế Đồ hoạ/Giao diện/Trải nghiệm khác', 'Thiết kế Đồ hoạ/Giao diện/Trải nghiệm'),
+('Chuyên môn Công nghệ thông tin khác', 'Công nghệ thông tin khác'),
+('IT Consultant', 'Công nghệ thông tin khác'),
+('Quản trị website', 'Công nghệ thông tin khác'),
+('Bán hàng kỹ thuật IT', 'Công nghệ thông tin khác'),
+('GIS Engineer', 'Công nghệ thông tin khác'),
+('Software Tester (Automation & Manual)','Software Testing'),
+('QA Engineer', 'Software Testing'),
+('Process Quality Assurance (PQA)', 'Software Testing'),
+('Automation Tester', 'Software Testing'),
+('Game Tester', 'Software Testing'),
+('Manual Tester', 'Software Testing'),
+('IT Project Manager', 'IT Project Management'),
+('Kỹ sư cầu nối BrSE', 'IT Project Management'),
+('Scrum Master', 'IT Project Management'),
+('IT Comtor', 'IT Project Management'),
+('Data Engineer', 'Data Science'),
+('Data Analyst', 'Data Science'),
+('Data Scientist', 'Data Science');
 
 INSERT INTO technologies (name) VALUES
 ('Python'),

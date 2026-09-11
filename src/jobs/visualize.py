@@ -32,13 +32,24 @@ conn = mysql.connector.connect(
 
 query = f"""
 SELECT
-    job_category,
-    salary_unit,
-    min_salary,
-    max_salary
-FROM jobs
-WHERE job_category IS NOT NULL
-AND created_date = '{processing_date}';
+    t.job_category,
+    t.salary_unit,
+    t.min_salary,
+    t.max_salary
+FROM (
+    SELECT
+        c.group_cat AS job_category,
+        j.salary_unit,
+        j.min_salary,
+        j.max_salary
+    FROM jobs AS j
+    CROSS JOIN categories AS c
+    WHERE FIND_IN_SET(
+        c.name,
+        REPLACE(j.tag, ', ', ',')
+    ) > 0
+    AND j.created_date = '{processing_date}'
+) AS t;
 """
 
 df = pd.read_sql(query, conn)

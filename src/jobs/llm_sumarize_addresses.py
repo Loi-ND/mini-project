@@ -47,81 +47,269 @@ client = genai.Client(
 def process_batch(elements):
 
     prompt = f"""
-Bạn là hệ thống trích xuất và chuẩn hóa địa điểm làm việc.
+    Bạn là một hệ thống trích xuất và chuẩn hóa địa điểm làm việc từ dữ liệu tuyển dụng.
 
-ĐẦU VÀO:
-Là một JSON array gồm nhiều chuỗi địa điểm làm việc.
+    ========================
+    NGUYÊN TẮC QUAN TRỌNG NHẤT
+    ==========================
 
-NHIỆM VỤ:
-- Xử lý từng element input độc lập.
-- Trích xuất tất cả địa điểm làm việc xuất hiện trong từng element.
-- Chuẩn hóa địa điểm theo các quy tắc bên dưới.
-- Giữ nguyên thứ tự các element input.
-- Mỗi element input phải tương ứng với đúng một element output.
-- Không được gộp các element input với nhau.
-- Số lượng phần tử output phải bằng chính xác số lượng phần tử input.
+    INPUT là một JSON array gồm N phần tử.
 
-QUY TẮC CHUẨN HÓA:
+    OUTPUT BẮT BUỘC phải là một JSON array gồm CHÍNH XÁC N phần tử.
 
-1. Loại bỏ các thông tin địa chỉ chi tiết:
-   - Số nhà
-   - Số phòng
-   - Tầng
-   - Tòa nhà
-   - Tên đường
-   - Khu dân cư
-   - Các thông tin địa chỉ chi tiết khác.
+    Có quan hệ 1-1 tuyệt đối:
 
-2. Chỉ giữ:
-   - Tên tỉnh/thành phố.
-   - Tên phường/xã/thị trấn hoặc khu vực tương ứng.
+    INPUT[i] -> OUTPUT[i]
 
-3. Loại bỏ thông tin quận/huyện cũ trong dấu ngoặc.
+    Trong mọi trường hợp:
 
-4. Không tự suy đoán hoặc thêm địa điểm không xuất hiện trong input.
+    * Không được bỏ sót bất kỳ input nào.
+    * Không được tạo thêm output.
+    * Không được gộp hai hoặc nhiều input thành một output.
+    * Không được tách một input thành nhiều output.
+    * Không được thay đổi thứ tự input.
+    * Mỗi input phải tạo ra đúng một output string.
+    * Nếu không tìm thấy địa điểm trong một input thì output tương ứng là "Không có thông tin".
+    * KHÔNG được vì input giống nhau mà gộp chúng thành một phần tử.
+    * Hai input giống hệt nhau vẫn phải tạo ra hai output riêng biệt.
 
-5. Nếu một element chỉ có một địa điểm:
-   "Thành phố: Phường/Xã/Khu vực"
+    Ví dụ:
 
-6. Nếu một element có nhiều địa điểm:
-   Nối các địa điểm bằng dấu ":".
+    INPUT:
+    ["Hà Nội", "Hà Nội", "Đà Nẵng"]
 
-   Ví dụ:
-   Input:
-   "- Hà Nội: Phường Ngọc Hà | - Hồ Chí Minh: Phường Tân Bình"
+    OUTPUT:
+    ["Hà Nội", "Hà Nội", "Đà Nẵng"]
 
-   Output:
-   "Hà Nội: Phường Ngọc Hà: Hồ Chí Minh: Phường Tân Bình"
+    Không được trả về:
+    ["Hà Nội", "Đà Nẵng"]
 
-7. Không sử dụng ký tự "|" trong output.
+    ========================
+    QUY TRÌNH XỬ LÝ
+    ===============
 
-8. Mỗi thành phố phải đi kèm với phường/xã/khu vực tương ứng.
+    Hãy xử lý từng input element độc lập theo index.
 
-9. Nếu không có thông tin địa điểm:
-   "Không có thông tin"
+    Với mỗi INPUT[i]:
 
-10. Không được thay đổi thứ tự địa điểm xuất hiện trong input.
+    1. Đọc toàn bộ chuỗi.
+    2. Xác định TẤT CẢ địa điểm làm việc thực sự xuất hiện trong chuỗi.
+    3. Không lấy thông tin không phải địa điểm.
+    4. Chuẩn hóa từng địa điểm.
+    5. Nếu có nhiều địa điểm trong cùng một input, giữ nguyên thứ tự xuất hiện.
+    6. Tạo ĐÚNG MỘT output string cho INPUT[i].
+    7. Sau khi xử lý toàn bộ input, kiểm tra lại số lượng output.
 
-QUY TẮC JSON BẮT BUỘC:
+    ========================
+    QUY TẮC TRÍCH XUẤT
+    ==================
 
-- Output phải là một JSON array hợp lệ.
-- Mỗi phần tử của array phải là một JSON string.
-- Số lượng phần tử output phải bằng chính xác số lượng phần tử input.
-- Không được trả về object.
-- Không được trả về nested array.
-- Không được thêm Markdown.
-- Không được dùng code fence.
-- Không được thêm giải thích.
-- Không được thêm text trước JSON.
-- Không được thêm text sau JSON.
-- Output phải bắt đầu bằng "[" và kết thúc bằng "]".
-- Phải đảm bảo số lượng phần tử của output
+    Chỉ trích xuất địa điểm làm việc thực sự xuất hiện trong INPUT.
 
-INPUT:
-{json.dumps(elements, ensure_ascii=False)}
+    Không được suy đoán địa điểm dựa trên:
 
-OUTPUT:
-"""
+    * Tên công ty.
+    * Tên đường.
+    * Tên dự án.
+    * Tên tòa nhà.
+    * Thông tin tuyển dụng.
+    * Địa điểm thường gặp của công ty.
+    * Kiến thức bên ngoài INPUT.
+
+    Không được thêm tỉnh/thành phố, phường/xã hoặc khu vực nếu thông tin đó không xuất hiện hoặc không thể xác định trực tiếp từ INPUT.
+
+    ========================
+    QUY TẮC CHUẨN HÓA
+    =================
+
+    Mỗi địa điểm phải được chuẩn hóa theo cấu trúc:
+
+    "Tỉnh/Thành phố: Phường/Xã/Khu vực"
+
+    Ví dụ:
+
+    "Hà Nội: Phường Ngọc Hà"
+
+    "Hồ Chí Minh: Phường Tân Bình"
+
+    Nếu INPUT chứa địa chỉ chi tiết:
+
+    "Hà Nội: Số 122 đường Hoàng Quốc Việt, Phường Cầu Giấy (quận Cầu Giấy cũ)"
+
+    OUTPUT:
+
+    "Hà Nội: Phường Cầu Giấy"
+
+    Loại bỏ:
+
+    * Số nhà.
+    * Số phòng.
+    * Số tầng.
+    * Tòa nhà.
+    * Tên đường.
+    * Khu dân cư.
+    * Tên chung cư.
+    * Địa chỉ chi tiết khác.
+
+    Giữ lại:
+
+    * Tỉnh/thành phố.
+    * Phường.
+    * Xã.
+    * Thị trấn.
+    * Khu vực tương ứng nếu INPUT thực sự cung cấp khu vực đó.
+
+    ========================
+    QUY TẮC NGOẶC
+    =============
+
+    Nếu thông tin trong ngoặc chỉ là tên quận/huyện cũ hoặc thông tin hành chính cũ thì loại bỏ.
+
+    Ví dụ:
+
+    "Phường Cầu Giấy (quận Cầu Giấy cũ)"
+
+    -> "Phường Cầu Giấy"
+
+    "Phường Đống Đa (quận Đống Đa cũ)"
+
+    -> "Phường Đống Đa"
+
+    Không được loại bỏ thông tin trong ngoặc nếu nó là một phần cần thiết để xác định địa điểm.
+
+    ========================
+    NHIỀU ĐỊA ĐIỂM TRONG MỘT INPUT
+    ==============================
+
+    Nếu một INPUT chứa nhiều địa điểm, phải giữ TẤT CẢ địa điểm theo đúng thứ tự xuất hiện.
+
+    Ví dụ:
+
+    INPUT:
+    "- Hà Nội: Phường Ngọc Hà | - Hồ Chí Minh: Phường Tân Bình"
+
+    OUTPUT:
+    "Hà Nội: Phường Ngọc Hà: Hồ Chí Minh: Phường Tân Bình"
+
+    Không được bỏ địa điểm thứ hai.
+
+    Không được đổi thứ tự.
+
+    Không được dùng ký tự "|".
+
+    ========================
+    QUY TẮC DẤU PHÂN CÁCH
+    =====================
+
+    Khi một INPUT có nhiều địa điểm:
+
+    * Dùng ": " để phân cách giữa các địa điểm.
+    * Không sử dụng "|".
+    * Không sử dụng ";".
+    * Không sử dụng newline.
+    * Không tạo array con.
+    * Tất cả các địa điểm của cùng một INPUT phải nằm trong MỘT JSON string.
+
+    Ví dụ:
+
+    ĐÚNG:
+    "Hà Nội: Phường Ngọc Hà: Hồ Chí Minh: Phường Tân Bình"
+
+    SAI:
+    ["Hà Nội: Phường Ngọc Hà", "Hồ Chí Minh: Phường Tân Bình"]
+
+    SAI:
+    "Hà Nội: Phường Ngọc Hà | Hồ Chí Minh: Phường Tân Bình"
+
+    ========================
+    KHI KHÔNG CÓ ĐỊA ĐIỂM
+    =====================
+
+    Nếu INPUT không chứa thông tin địa điểm làm việc rõ ràng:
+
+    OUTPUT tương ứng phải là:
+
+    "Không có thông tin"
+
+    Không được suy đoán.
+
+    Ví dụ:
+
+    INPUT:
+    ["Lương thỏa thuận", "Full-time", "Hà Nội"]
+
+    OUTPUT:
+    ["Không có thông tin", "Không có thông tin", "Hà Nội"]
+
+    ========================
+    KIỂM TRA TÍNH CHÍNH XÁC
+    =======================
+
+    TRƯỚC KHI TRẢ OUTPUT, bắt buộc thực hiện kiểm tra nội bộ:
+
+    Gọi:
+
+    N = số phần tử INPUT
+    M = số phần tử OUTPUT
+
+    Điều kiện bắt buộc:
+
+    M == N
+
+    Ngoài ra phải kiểm tra:
+
+    1. OUTPUT[i] tương ứng với INPUT[i].
+    2. Không có INPUT nào bị bỏ qua.
+    3. Không có OUTPUT nào được tạo thêm.
+    4. Không có INPUT nào tạo ra nhiều OUTPUT.
+    5. Không có nhiều INPUT bị gộp thành một OUTPUT.
+    6. Thứ tự các INPUT được giữ nguyên.
+    7. Mỗi OUTPUT là một JSON string.
+    8. OUTPUT không chứa nested array.
+    9. OUTPUT không chứa object.
+    10. Không có ký tự "|" trong bất kỳ OUTPUT nào.
+    11. Không có Markdown.
+    12. Không có text ngoài JSON.
+
+    Nếu phát hiện M != N, phải sửa OUTPUT trước khi trả về.
+
+    TUYỆT ĐỐI KHÔNG được trả về kết quả nếu số lượng OUTPUT chưa bằng số lượng INPUT.
+
+    ========================
+    QUY TẮC JSON BẮT BUỘC
+    =====================
+
+    Output cuối cùng phải:
+
+    * Là JSON array hợp lệ.
+    * Có chính xác N phần tử.
+    * Mỗi phần tử là một JSON string.
+    * Không phải object.
+    * Không phải nested array.
+    * Không có Markdown.
+    * Không có code fence.
+    * Không có giải thích.
+    * Không có text trước JSON.
+    * Không có text sau JSON.
+    * Bắt đầu bằng "[".
+    * Kết thúc bằng "]".
+
+    Ví dụ định dạng hợp lệ:
+
+    ["Hà Nội: Phường Cầu Giấy", "Không có thông tin", "Đà Nẵng: Phường Hải Châu"]
+
+    ========================
+    INPUT
+    =====
+
+    {json.dumps(elements, ensure_ascii=False)}
+
+    ========================
+    OUTPUT
+    ======
+
+    """
+
 
     response = client.models.generate_content(
         model="gemini-flash-lite-latest",

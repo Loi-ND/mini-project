@@ -8,8 +8,7 @@ AIRFLOW_HOME=os.environ.get("AIRFLOW_HOME")
 
 from utils import (
     processing_address_columns,
-    processing_salary_columns,
-    processing_job_categories
+    processing_salary_columns
 )
 df = pd.read_csv(
     os.path.join(
@@ -19,7 +18,6 @@ df = pd.read_csv(
     )
 )
 
-df = processing_job_categories(df)
 df = processing_address_columns(df)
 df = processing_salary_columns(df)
 
@@ -36,7 +34,7 @@ job_detail_records = [
         item.get("min_salary"),
         item.get("max_salary"),
         item.get("salary_unit"),
-        item.get("job_category")
+        item.get("tag")
     )
     for item in df.to_dict(orient="records")
 ]
@@ -77,7 +75,7 @@ try:
                     min_salary,
                     max_salary,
                     salary_unit,
-                    job_category
+                    tag
                 )
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);
                 """

@@ -13,7 +13,7 @@ python = os.path.join(AIRFLOW_HOME, ".venv/bin/python")
 default_args = {
     "owner": 'admin',
     "retries": 3,
-    "retry_delay": timedelta(minutes=2),
+    "retry_delay": timedelta(minutes=1),
     "email_on_failure": False,
     "on_failure_callback": discord_notification_on_failure
 }
@@ -32,8 +32,8 @@ with DAG(
     ingest_task = BashOperator(
         task_id = "ingest_task",
         bash_command=(
-            f"{python} {ingest_task_path}"
+            f"xvfb-run -a {python} {ingest_task_path}"
         ),
-        execution_timeout = timedelta(hours=2)
+        execution_timeout = timedelta(hours=3)
     )
     ingest_task
